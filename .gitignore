@@ -1,0 +1,24 @@
+# dependencies
+node_modules
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env
+.env*
+!.env.example
+
+# Next.js
+.next
+out
+.cache
+
+# Prisma
+prisma/*.db
+
+# OS
+.DS_Store
+Thumbs.db

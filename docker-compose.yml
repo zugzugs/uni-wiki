@@ -1,0 +1,28 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-gameswiki}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    restart: unless-stopped
+    environment:
+      MEILI_NO_ANALYTICS: 'true'
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-devmasterkey}
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili_data:/meili_data
+
+volumes:
+  pgdata:
+  meili_data:
