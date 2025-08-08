@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slug      String   @unique
+  name      String
+  primaryDomain String? @unique
+  themeJson Json?
+
+  games     Game[]
+  users     UserTenantRole[]
+  pages     Page[]
+  media     Media[]
+  tags      Tag[]
+}
+
+model Game {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  slug      String
+  title     String
+  summary   String?
+  coverUrl  String?
+  bannerUrl String?
+
+  developers String[]
+  publishers String[]
+  platforms  String[]
+  genres     String[]
+
+  releaseDate DateTime?
+
+  pages     Page[]
+  media     Media[]
+
+  @@unique([tenantId, slug])
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  gameId    String?
+  game      Game?    @relation(fields: [gameId], references: [id])
+
+  slug      String
+  title     String
+  summary   String?
+  content   Json     // TipTap JSON or similar rich-content document
+  infobox   Json?
+  visibility Visibility @default(PUBLISHED)
+
+  authorId  String?
+  author    User?     @relation(fields: [authorId], references: [id])
+
+  tags      Tag[]     @relation("PageTags")
+  media     Media[]
+
+  @@unique([tenantId, slug])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  gameId    String?
+  game      Game?    @relation(fields: [gameId], references: [id])
+
+  pageId    String?
+  page      Page?    @relation(fields: [pageId], references: [id])
+
+  type      MediaType
+  url       String
+  title     String?
+  metadata  Json?
+
+  @@index([tenantId])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  slug      String
+  label     String
+
+  pages     Page[] @relation("PageTags")
+
+  @@unique([tenantId, slug])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+
+  roles     UserTenantRole[]
+  pages     Page[]
+}
+
+model UserTenantRole {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  tenantId  String
+  role      Role
+
+  user      User   @relation(fields: [userId], references: [id])
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([userId, tenantId])
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+  EDITOR
+  VIEWER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  MODEL3D
+}
+
+enum Visibility {
+  DRAFT
+  REVIEW
+  PUBLISHED
+}
