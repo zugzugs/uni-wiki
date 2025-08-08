@@ -9,6 +9,7 @@ Ultra-advanced, graphic, multi-tenant wiki system for games. Built with Next.js 
 ```bash
 cp .env.example .env
 cp .env.example apps/web/.env.local
+cp .env.example packages/db/.env
 ```
 
 2. Start services
